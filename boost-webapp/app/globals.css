@@ -1,0 +1,34 @@
+:root{
+  --bg:#FFFFFF; --bg2:#FFF3F3; --bg3:#FCE0E0; --border:#F0BEBE;
+  --text:#331515; --text-dim:#B07A7A;
+  --red:#C42B2B; --red-dark:#8B1414; --pink:#E38A8A;
+  --font-display: 'PT Sans', Arial, sans-serif;
+  --font-body: 'PT Sans', Arial, sans-serif;
+  /* acentos tipo Notion para variar tarjetas sin salir de la calidez de la marca */
+  --accent-gold:#E8B94A; --accent-gold-bg:#FBF2DC;
+  --accent-mint:#4FAE8A; --accent-mint-bg:#E3F3EC;
+  --accent-blue:#5B8DEF; --accent-blue-bg:#E9EFFC;
+  --ig:#D6266E; --fb:#1877F2; --tk:#111111;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;color:var(--text);font-family:var(--font-body);font-size:16px;
+  background-image:url(/app-bg.jpg);background-size:cover;background-position:center;background-attachment:fixed;
+}
+button,input,select,textarea{font-family:var(--font-body);}
+a{color:inherit;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:#EAB4B4;border-radius:4px;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14.5px;cursor:pointer;}
+.btn:hover{border-color:var(--red);}
+.btn.primary{background:var(--red-dark);color:#fff;border:none;font-weight:600;}
+.btn.primary:hover{opacity:.9;}
+.btn.ghost{background:transparent;}
+
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:8px;}
+.field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 12px;color:var(--text);font-size:15px;outline:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--red);}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;}
