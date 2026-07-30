@@ -6,6 +6,7 @@ import AppNav from "@/components/AppNav";
 import NotesCard from "@/components/NotesCard";
 import AlertsCard from "@/components/AlertsCard";
 import TeamRemindersCard from "@/components/TeamRemindersCard";
+import ExtraRequestsCard from "@/components/ExtraRequestsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,11 @@ export default async function DashboardPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
+  const { data: extraRequests } = await supabase
+    .from("extra_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   const alerts = computeAlerts(posts || []);
 
   return (
@@ -129,6 +135,7 @@ export default async function DashboardPage() {
             <AlertsCard alerts={alerts} />
             <NotesCard userId={user.id} initialNotes={profile?.notes} />
             <TeamRemindersCard reminders={reminders || []} userId={user.id} userName={profile?.full_name} lastSeen={profile?.reminders_last_seen} />
+            <ExtraRequestsCard requests={extraRequests || []} userId={user.id} userName={profile?.full_name} />
           </div>
         </div>
       </div>
