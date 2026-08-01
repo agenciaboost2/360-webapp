@@ -9,78 +9,112 @@ const CONTENT_LABEL = {
   Estatico: "Indicaciones de contenido",
 };
 
-function escapeHtml(str) {
-  return String(str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function textParagraphs(docxLib, text) {
+  const { Paragraph, TextRun } = docxLib;
+  return String(text || "")
+    .split("\n")
+    .map((line) => new Paragraph({ children: [new TextRun(line.trim() === "" ? " " : line)], spacing: { after: 80 } }));
 }
-function paragraphsFromText(text) {
-  return escapeHtml(text).split("\n").map((line) => (line.trim() === "" ? "<p>&nbsp;</p>" : `<p>${line}</p>`)).join("");
+
+function labeledParagraph(docxLib, label, value) {
+  const { Paragraph, TextRun } = docxLib;
+  return new Paragraph({
+    children: [new TextRun({ text: `${label}: `, bold: true }), new TextRun(value)],
+    spacing: { after: 80 },
+  });
 }
 
 export default function ExportPlanningButton({ client, posts, ejesText, monthLabel, monthKey }) {
   const [ready, setReady] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
-  function handleExport() {
-    if (!window.htmlDocx) {
+  async function handleExport() {
+    if (!window.docx) {
       alert("Todavía se está cargando el generador de Word, esperá un segundo y probá de nuevo.");
       return;
     }
+    setGenerating(true);
+    const docxLib = window.docx;
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = docxLib;
     const monthLabelCap = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
-    let body = `
-      <div style="text-align:center">
-        <h1 style="font-size:16pt;margin-bottom:2px">${escapeHtml(client.name)}</h1>
-        <p style="margin-top:0">Planificación de contenido — ${monthLabelCap}</p>
-      </div>
-      <hr/>
-    `;
+    const children = [];
+
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 40 },
+      children: [new TextRun({ text: client.name, bold: true, size: 32 })],
+    }));
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 200 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "CCCCCC", space: 8 } },
+      children: [new TextRun({ text: `Planificación de contenido — ${monthLabelCap}`, size: 22 })],
+    }));
 
     if (ejesText && ejesText.trim()) {
-      body += `<h2>Ejes de comunicación del mes</h2>${paragraphsFromText(ejesText)}`;
+      children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 }, children: [new TextRun({ text: "Ejes de comunicación del mes", color: "8B1414" })] }));
+      children.push(...textParagraphs(docxLib, ejesText));
     }
 
     if (posts.length === 0) {
-      body += `<p><i>No hay publicaciones cargadas para este mes todavía.</i></p>`;
+      children.push(new Paragraph({ children: [new TextRun({ text: "No hay publicaciones cargadas para este mes todavía.", italics: true })] }));
     }
 
     posts.forEach((p, idx) => {
       const num = String(idx + 1).padStart(2, "0");
-      body += `<h2>Post ${num} — ${escapeHtml(p.type)}</h2>`;
-      body += `<p><b>"${escapeHtml(p.title)}"</b></p>`;
-      if (p.objective) body += `<p><b>Objetivo:</b> ${escapeHtml(p.objective)}</p>`;
+      children.push(new Paragraph({
+        heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 },
+        children: [new TextRun({ text: `Post ${num} — ${p.type}`, color: "8B1414" })],
+      }));
+      children.push(new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text: `"${p.title}"`, bold: true })] }));
+      if (p.objective) children.push(labeledParagraph(docxLib, "Objetivo", p.objective));
       if (p.script) {
-        body += `<p><b>${CONTENT_LABEL[p.type] || "Contenido"}</b></p>`;
-        body += paragraphsFromText(p.script);
+        children.push(new Paragraph({ spacing: { before: 100, after: 60 }, children: [new TextRun({ text: CONTENT_LABEL[p.type] || "Contenido", bold: true })] }));
+        children.push(...textParagraphs(docxLib, p.script));
       }
-      if (p.links) body += `<p><b>Material / referencias:</b></p>${paragraphsFromText(p.links)}`;
-      if (p.caption) body += `<p><b>Caption</b></p>${paragraphsFromText(p.caption)}`;
-      if (p.notes) body += `<p><b>Notas:</b> ${escapeHtml(p.notes)}</p>`;
-      body += `<hr/>`;
+      if (p.links) {
+        children.push(new Paragraph({ spacing: { before: 100, after: 60 }, children: [new TextRun({ text: "Material / referencias", bold: true })] }));
+        children.push(...textParagraphs(docxLib, p.links));
+      }
+      if (p.caption) {
+        children.push(new Paragraph({ spacing: { before: 100, after: 60 }, children: [new TextRun({ text: "Caption", bold: true })] }));
+        children.push(...textParagraphs(docxLib, p.caption));
+      }
+      if (p.notes) children.push(labeledParagraph(docxLib, "Notas", p.notes));
+      children.push(new Paragraph({
+        spacing: { before: 150, after: 150 },
+        border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "DDDDDD", space: 4 } },
+        children: [new TextRun("")],
+      }));
     });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-      body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1a1a1a;}
-      h1{font-family:Calibri,Arial,sans-serif;}
-      h2{font-size:13pt;margin-top:22px;margin-bottom:6px;color:#8B1414;}
-      p{margin:4px 0;line-height:1.4;}
-      hr{border:none;border-top:1px solid #ccc;margin:18px 0;}
-    </style></head><body>${body}</body></html>`;
+    const doc = new Document({
+      sections: [{ properties: {}, children }],
+      styles: { default: { document: { run: { font: "Calibri", size: 22 } } } },
+    });
 
-    const converted = window.htmlDocx.asBlob(html);
-    const url = URL.createObjectURL(converted);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Planificacion_${client.name.replace(/\s+/g, "")}_${monthLabelCap.replace(/\s+/g, "")}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    try {
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Planificacion_${client.name.replace(/\s+/g, "")}_${monthLabelCap.replace(/\s+/g, "")}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    } catch (err) {
+      alert("No se pudo generar el Word: " + err.message);
+    }
+    setGenerating(false);
   }
 
   return (
     <>
-      <Script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js" strategy="afterInteractive" onLoad={() => setReady(true)} />
-      <button className="btn ghost" style={{ color: "#fff", borderColor: "#ffffff55" }} onClick={handleExport}>
-        ⬇ Descargar planificación (Word)
+      <Script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js" strategy="afterInteractive" onLoad={() => setReady(true)} />
+      <button className="btn ghost" style={{ color: "#fff", borderColor: "#ffffff55" }} onClick={handleExport} disabled={generating}>
+        {generating ? "Generando..." : "⬇ Descargar planificación (Word)"}
       </button>
     </>
   );
