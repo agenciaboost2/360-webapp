@@ -6,7 +6,6 @@ import AppNav from "@/components/AppNav";
 import NotesCard from "@/components/NotesCard";
 import AlertsCard from "@/components/AlertsCard";
 import TeamRemindersCard from "@/components/TeamRemindersCard";
-import ExtraRequestsCard from "@/components/ExtraRequestsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +59,15 @@ export default async function DashboardPage() {
     profile = { id: user.id, full_name: defaultName, avatar_url: "", notes: "" };
   }
 
+  // Limpieza automática: borra publicaciones ya "Publicado" con más de 60 días
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+  await supabase
+    .from("posts")
+    .delete()
+    .eq("status", "Publicado")
+    .lt("post_date", sixtyDaysAgo.toISOString().slice(0, 10));
+
   const { data: clients } = await supabase
     .from("clients")
     .select("*")
@@ -72,11 +80,6 @@ export default async function DashboardPage() {
 
   const { data: reminders } = await supabase
     .from("team_reminders")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  const { data: extraRequests } = await supabase
-    .from("extra_requests")
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -135,7 +138,6 @@ export default async function DashboardPage() {
             <AlertsCard alerts={alerts} />
             <NotesCard userId={user.id} initialNotes={profile?.notes} />
             <TeamRemindersCard reminders={reminders || []} userId={user.id} userName={profile?.full_name} lastSeen={profile?.reminders_last_seen} />
-            <ExtraRequestsCard requests={extraRequests || []} userId={user.id} userName={profile?.full_name} />
           </div>
         </div>
       </div>
