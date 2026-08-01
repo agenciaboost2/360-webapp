@@ -62,16 +62,17 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
-  const shown = selectedDay
-    ? byDay[selectedDay] || []
-    : initialPosts.slice().sort((a, b) => new Date(a.post_date) - new Date(b.post_date));
-
   const postsThisMonth = initialPosts
     .filter((p) => {
       const d = new Date(p.post_date + "T00:00:00");
       return d.getFullYear() === year && d.getMonth() === month;
     })
     .sort((a, b) => new Date(a.post_date) - new Date(b.post_date));
+
+  const shown = selectedDay
+    ? byDay[selectedDay] || []
+    : postsThisMonth;
+
   const ejesThisMonth = initialEjes.find((e) => e.month === monthKey)?.content || "";
 
   async function handleDeletePost(id) {
@@ -166,7 +167,7 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
         <div style={{ flex: 1, minWidth: 320 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 12px" }}>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16.5 }}>
-              {selectedDay ? `Día ${selectedDay}` : "Todas las publicaciones"}
+              {selectedDay ? `Día ${selectedDay}` : `Publicaciones de ${monthLabel}`}
             </div>
             <button className="btn primary" onClick={() => setModalPost({ client_id: client.id, post_date: selectedDay ? new Date(year, month, selectedDay).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10) })}>
               + Pieza
