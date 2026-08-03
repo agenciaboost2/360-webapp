@@ -12,7 +12,7 @@ const FIELDS = [
   ["comments", "Comentarios", "number"], ["reposts", "Reposts", "number"],
   ["saved", "Contenido guardado", "number"], ["shared_between_users", "Contenido compartido entre usuarios", "number"],
   ["story_replies", "Total de respuestas en stories", "number"],
-  ["story_interactions_total", "Total de interacciones en stories", "number"],
+  ["story_interactions_total", "Total de interacciones", "number"],
   ["story_followers_pct", "% de seguidores", "number"], ["story_non_followers_pct", "% de no seguidores", "number"],
 ];
 
