@@ -109,94 +109,96 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
 
       {editingClient && <EditClientModal client={client} onClose={() => setEditingClient(false)} />}
 
-      <div style={{ padding: "18px 32px 0", display: "flex", gap: 24, flexWrap: "wrap", alignItems: "flex-start" }}>
-        <div style={{ width: 440, maxWidth: "100%", flexShrink: 0 }}>
-          <EjesCard clientId={client.id} monthKey={monthKey} monthLabel={monthLabel} initialEjes={initialEjes} onSaved={() => router.refresh()} />
-          <AccountInfoCard client={client} />
-
-          <div className="card">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <button className="btn ghost" onClick={() => { setMonthCursor(new Date(year, month - 1, 1)); setSelectedDay(null); }}>‹</button>
-              <div style={{ fontWeight: 600, textTransform: "capitalize" }}>{monthLabel}</div>
-              <button className="btn ghost" onClick={() => { setMonthCursor(new Date(year, month + 1, 1)); setSelectedDay(null); }}>›</button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 4 }}>
-              {["D", "L", "M", "M", "J", "V", "S"].map((d, i) => (
-                <div key={i} style={{ textAlign: "center", fontSize: 12.5, color: "var(--text-dim)" }}>{d}</div>
-              ))}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
-              {cells.map((d, i) => {
-                const dayPosts = d ? byDay[d] || [] : [];
-                const isSelected = d === selectedDay;
-                const isToday = d && year === today.getFullYear() && month === today.getMonth() && d === today.getDate();
-                const firstPost = dayPosts[0];
-                const extra = dayPosts.length - 1;
-                return (
-                  <button
-                    key={i}
-                    disabled={!d}
-                    onClick={() => setSelectedDay(isSelected ? null : d)}
-                    style={{
-                      minHeight: 92, border: "none", borderRadius: 9, cursor: d ? "pointer" : "default",
-                      background: isSelected ? accent : "transparent",
-                      outline: isToday && !isSelected ? `1px solid ${accent}` : "none",
-                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 3, padding: "4px 3px",
-                    }}
-                  >
-                    {d && <span style={{ fontSize: 13.5, color: isSelected ? "#fff" : "#5A3232" }}>{d}</span>}
-                    {firstPost && (
-                      <span style={{
-                        fontSize: 9.5, fontWeight: 700, padding: "3px 4px", borderRadius: 4, width: "100%",
-                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
-                        textAlign: "center", lineHeight: 1.25, wordBreak: "break-word",
-                        color: isSelected ? (TYPE_COLOR[firstPost.type] || accent) : "#fff",
-                        background: isSelected ? "#fff" : (TYPE_COLOR[firstPost.type] || "#B07A7A"),
-                      }}>{firstPost.title}</span>
-                    )}
-                    {extra > 0 && (
-                      <span style={{ fontSize: 9.5, color: isSelected ? "#fff" : "var(--text-dim)" }}>+{extra}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+      <div style={{ padding: "18px 32px 0" }}>
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 0 }}>
+          <div style={{ flex: 1, minWidth: 300 }}>
+            <EjesCard clientId={client.id} monthKey={monthKey} monthLabel={monthLabel} initialEjes={initialEjes} onSaved={() => router.refresh()} />
+          </div>
+          <div style={{ flex: 1, minWidth: 300 }}>
+            <AccountInfoCard client={client} />
           </div>
         </div>
 
-        <div style={{ flex: 1, minWidth: 320 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 12px" }}>
-            <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16.5 }}>
-              {selectedDay ? `Día ${selectedDay}` : "Todas las publicaciones"}
-            </div>
-            <button className="btn primary" onClick={() => setModalPost({ client_id: client.id, post_date: selectedDay ? new Date(year, month, selectedDay).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10) })}>
-              + Pieza
-            </button>
+        <div className="card">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <button className="btn ghost" onClick={() => { setMonthCursor(new Date(year, month - 1, 1)); setSelectedDay(null); }}>‹</button>
+            <div style={{ fontWeight: 700, fontSize: 18, textTransform: "capitalize", fontFamily: "var(--font-display)" }}>{monthLabel}</div>
+            <button className="btn ghost" onClick={() => { setMonthCursor(new Date(year, month + 1, 1)); setSelectedDay(null); }}>›</button>
           </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {shown.length === 0 && <div style={{ color: "var(--text-dim)", fontSize: 15, padding: "20px 4px" }}>No hay publicaciones acá todavía.</div>}
-            {shown.map((p) => (
-              <div key={p.id} className="card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", margin: 0, borderLeft: `4px solid ${TYPE_COLOR[p.type] || accent}` }} onClick={() => setModalPost(p)}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{p.title}</div>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, padding: "3px 8px", borderRadius: 6, color: "#fff", background: TYPE_COLOR[p.type] }}>{p.type.toUpperCase()}</span>
-                    {(p.platforms || []).map((pl) => (
-                      <span key={pl} style={{ fontSize: 12, fontWeight: 700, padding: "3px 7px", borderRadius: 6, color: "#fff", background: PLATFORM_COLOR[pl] }}>{PLATFORM_LABEL[pl]}</span>
-                    ))}
-                    <span style={{ fontSize: 13, color: "var(--text-dim)" }}>{new Date(p.post_date + "T00:00:00").toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}</span>
-                    {p.links && p.links.split("\n").map((l) => l.trim()).filter(Boolean).map((l, i) => (
-                      <a key={i} href={l} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ fontSize: 13, color: "var(--red-dark)", textDecoration: "underline" }}>
-                        🔗 {i + 1}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                <span style={{ fontSize: 13, color: "var(--text-dim)", flexShrink: 0, marginLeft: 8 }}>{p.status}</span>
-              </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginBottom: 6 }}>
+            {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((d, i) => (
+              <div key={i} style={{ textAlign: "center", fontSize: 12.5, color: "var(--text-dim)", fontWeight: 600 }}>{d}</div>
             ))}
           </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
+            {cells.map((d, i) => {
+              const dayPosts = d ? byDay[d] || [] : [];
+              const isSelected = d === selectedDay;
+              const isToday = d && year === today.getFullYear() && month === today.getMonth() && d === today.getDate();
+              const firstPost = dayPosts[0];
+              const extra = dayPosts.length - 1;
+              return (
+                <button
+                  key={i}
+                  disabled={!d}
+                  onClick={() => setSelectedDay(isSelected ? null : d)}
+                  style={{
+                    minHeight: 130, border: "none", borderRadius: 10, cursor: d ? "pointer" : "default",
+                    background: isSelected ? accent : "var(--bg3)",
+                    outline: isToday && !isSelected ? `2px solid ${accent}` : "none",
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 4, padding: "6px 4px",
+                  }}
+                >
+                  {d && <span style={{ fontSize: 14.5, fontWeight: 600, color: isSelected ? "#fff" : "#5A3232" }}>{d}</span>}
+                  {firstPost && (
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: "4px 5px", borderRadius: 5, width: "100%",
+                      display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden",
+                      textAlign: "center", lineHeight: 1.3, wordBreak: "break-word",
+                      color: isSelected ? (TYPE_COLOR[firstPost.type] || accent) : "#fff",
+                      background: isSelected ? "#fff" : (TYPE_COLOR[firstPost.type] || "#B07A7A"),
+                    }}>{firstPost.title}</span>
+                  )}
+                  {extra > 0 && (
+                    <span style={{ fontSize: 10.5, color: isSelected ? "#fff" : "var(--text-dim)" }}>+{extra} más</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "24px 0 12px" }}>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 17 }}>
+            {selectedDay ? `Piezas del día ${selectedDay}` : `Piezas de ${monthLabel}`}
+          </div>
+          <button className="btn primary" onClick={() => setModalPost({ client_id: client.id, post_date: selectedDay ? new Date(year, month, selectedDay).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10) })}>
+            + Pieza
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 10, paddingBottom: 40 }}>
+          {shown.length === 0 && <div style={{ color: "var(--text-dim)", fontSize: 15, padding: "20px 4px" }}>No hay publicaciones acá todavía.</div>}
+          {shown.map((p) => (
+            <div key={p.id} className="card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", margin: 0, borderLeft: `4px solid ${TYPE_COLOR[p.type] || accent}` }} onClick={() => setModalPost(p)}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{p.title}</div>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, padding: "3px 8px", borderRadius: 6, color: "#fff", background: TYPE_COLOR[p.type] }}>{p.type.toUpperCase()}</span>
+                  {(p.platforms || []).map((pl) => (
+                    <span key={pl} style={{ fontSize: 12, fontWeight: 700, padding: "3px 7px", borderRadius: 6, color: "#fff", background: PLATFORM_COLOR[pl] }}>{PLATFORM_LABEL[pl]}</span>
+                  ))}
+                  <span style={{ fontSize: 13, color: "var(--text-dim)" }}>{new Date(p.post_date + "T00:00:00").toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}</span>
+                  {p.links && p.links.split("\n").map((l) => l.trim()).filter(Boolean).map((l, i) => (
+                    <a key={i} href={l} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ fontSize: 13, color: "var(--red-dark)", textDecoration: "underline" }}>
+                      🔗 {i + 1}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <span style={{ fontSize: 13, color: "var(--text-dim)", flexShrink: 0, marginLeft: 8 }}>{p.status}</span>
+            </div>
+          ))}
         </div>
       </div>
 
