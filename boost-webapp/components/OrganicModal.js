@@ -5,13 +5,15 @@ import { createClient } from "@/lib/supabase/client";
 const FIELDS = [
   ["month", "Mes", "month"], ["followers_total", "Seguidores (total)", "number"],
   ["new_followers", "Seguidores nuevos", "number"], ["unfollowed", "Dejaron de seguir", "number"],
-  ["reach", "Alcance", "number"], ["views", "Visualizaciones", "number"],
+  ["reach", "Cuentas alcanzadas", "number"], ["views", "Visualizaciones", "number"],
   ["profile_views", "Vistas al perfil", "number"], ["total_published", "Total contenido publicado", "number"],
   ["reels_shared", "Cantidad de Reels compartidos", "number"], ["posts_shared", "Cantidad de publicaciones compartidas", "number"],
   ["stories_shared", "Historias compartidas", "number"], ["likes", "Likes de contenido", "number"],
   ["comments", "Comentarios", "number"], ["reposts", "Reposts", "number"],
   ["saved", "Contenido guardado", "number"], ["shared_between_users", "Contenido compartido entre usuarios", "number"],
-  ["story_replies", "Total de respuestas en stories", "number"], ["stories_shared_between_users", "Stories compartidas entre usuarios", "number"],
+  ["story_replies", "Total de respuestas en stories", "number"],
+  ["story_interactions_total", "Total de interacciones en stories", "number"],
+  ["story_followers_pct", "% de seguidores", "number"], ["story_non_followers_pct", "% de no seguidores", "number"],
 ];
 
 function n(v) { const x = parseFloat(v); return isNaN(x) ? 0 : x; }
