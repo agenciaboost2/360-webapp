@@ -41,6 +41,7 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
   const [saveStatus, setSaveStatus] = useState(""); // "", "guardando", "guardado"
 
   const initialSnapshot = useRef(JSON.stringify(form));
+  const openingSnapshot = useRef(form);
   const debounceRef = useRef(null);
   const savingRef = useRef(false);
 
@@ -99,6 +100,12 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     initialSnapshot.current = JSON.stringify(form);
     if (closeAfter) onSaved();
     return true;
+  }
+
+  function handleUndo() {
+    if (!confirm("¿Volver a como estaba esta pieza cuando la abriste, descartando los cambios hechos en esta sesión?")) return;
+    setForm(openingSnapshot.current);
+    setTimeout(() => doSave(false), 50);
   }
 
   function handleCopyLink() {
@@ -191,7 +198,16 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
           <div className="field">
             <label>Compartir esta publicación</label>
             <button type="button" className="btn ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleCopyLink}>
-              {copied ? "✓ Enlace copiado" : "🔗 Copiar enlace para Gabi"}
+              {copied ? "✓ Enlace copiado" : "🔗 Copiar enlace para compartir"}
+            </button>
+          </div>
+        )}
+
+        {post.id && (
+          <div className="field">
+            <label>¿No te convenció el cambio?</label>
+            <button type="button" className="btn ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleUndo}>
+              ↩ Deshacer y volver a como estaba al abrir
             </button>
           </div>
         )}
