@@ -62,17 +62,16 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
+  const shown = selectedDay
+    ? byDay[selectedDay] || []
+    : initialPosts.slice().sort((a, b) => new Date(a.post_date) - new Date(b.post_date));
+
   const postsThisMonth = initialPosts
     .filter((p) => {
       const d = new Date(p.post_date + "T00:00:00");
       return d.getFullYear() === year && d.getMonth() === month;
     })
     .sort((a, b) => new Date(a.post_date) - new Date(b.post_date));
-
-  const shown = selectedDay
-    ? byDay[selectedDay] || []
-    : postsThisMonth;
-
   const ejesThisMonth = initialEjes.find((e) => e.month === monthKey)?.content || "";
 
   async function handleDeletePost(id) {
@@ -139,20 +138,21 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
                     disabled={!d}
                     onClick={() => setSelectedDay(isSelected ? null : d)}
                     style={{
-                      minHeight: 56, border: "none", borderRadius: 9, cursor: d ? "pointer" : "default",
+                      minHeight: 92, border: "none", borderRadius: 9, cursor: d ? "pointer" : "default",
                       background: isSelected ? accent : "transparent",
                       outline: isToday && !isSelected ? `1px solid ${accent}` : "none",
-                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 3, padding: "4px 2px",
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 3, padding: "4px 3px",
                     }}
                   >
                     {d && <span style={{ fontSize: 13.5, color: isSelected ? "#fff" : "#5A3232" }}>{d}</span>}
                     {firstPost && (
                       <span style={{
-                        fontSize: 10, fontWeight: 700, padding: "2px 3px", borderRadius: 4, width: "100%",
-                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center", lineHeight: 1.3,
+                        fontSize: 9.5, fontWeight: 700, padding: "3px 4px", borderRadius: 4, width: "100%",
+                        display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
+                        textAlign: "center", lineHeight: 1.25, wordBreak: "break-word",
                         color: isSelected ? (TYPE_COLOR[firstPost.type] || accent) : "#fff",
                         background: isSelected ? "#fff" : (TYPE_COLOR[firstPost.type] || "#B07A7A"),
-                      }}>{TYPE_SHORT[firstPost.type] || firstPost.type}</span>
+                      }}>{firstPost.title}</span>
                     )}
                     {extra > 0 && (
                       <span style={{ fontSize: 9.5, color: isSelected ? "#fff" : "var(--text-dim)" }}>+{extra}</span>
@@ -167,7 +167,7 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
         <div style={{ flex: 1, minWidth: 320 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 12px" }}>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16.5 }}>
-              {selectedDay ? `Día ${selectedDay}` : `Publicaciones de ${monthLabel}`}
+              {selectedDay ? `Día ${selectedDay}` : "Todas las publicaciones"}
             </div>
             <button className="btn primary" onClick={() => setModalPost({ client_id: client.id, post_date: selectedDay ? new Date(year, month, selectedDay).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10) })}>
               + Pieza
