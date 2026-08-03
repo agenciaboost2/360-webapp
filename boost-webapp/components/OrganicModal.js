@@ -5,9 +5,13 @@ import { createClient } from "@/lib/supabase/client";
 const FIELDS = [
   ["month", "Mes", "month"], ["followers_total", "Seguidores (total)", "number"],
   ["new_followers", "Seguidores nuevos", "number"], ["unfollowed", "Dejaron de seguir", "number"],
-  ["reach", "Alcance", "number"], ["likes", "Likes de contenido", "number"],
+  ["reach", "Alcance", "number"], ["views", "Visualizaciones", "number"],
+  ["profile_views", "Vistas al perfil", "number"], ["total_published", "Total contenido publicado", "number"],
+  ["reels_shared", "Cantidad de Reels compartidos", "number"], ["posts_shared", "Cantidad de publicaciones compartidas", "number"],
+  ["stories_shared", "Historias compartidas", "number"], ["likes", "Likes de contenido", "number"],
   ["comments", "Comentarios", "number"], ["reposts", "Reposts", "number"],
   ["saved", "Contenido guardado", "number"], ["shared_between_users", "Contenido compartido entre usuarios", "number"],
+  ["story_replies", "Total de respuestas en stories", "number"], ["stories_shared_between_users", "Stories compartidas entre usuarios", "number"],
 ];
 
 function n(v) { const x = parseFloat(v); return isNaN(x) ? 0 : x; }
@@ -15,12 +19,12 @@ function fmt(v, dec = 0) { return Number(v).toLocaleString("es-AR", { minimumFra
 function currentMonthKey() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 
 export default function OrganicModal({ record, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    month: record.month || currentMonthKey(),
-    followers_total: record.followers_total ?? 0, new_followers: record.new_followers ?? 0,
-    unfollowed: record.unfollowed ?? 0, reach: record.reach ?? 0, likes: record.likes ?? 0,
-    comments: record.comments ?? 0, reposts: record.reposts ?? 0, saved: record.saved ?? 0,
-    shared_between_users: record.shared_between_users ?? 0, notes: record.notes || "",
+  const [form, setForm] = useState(() => {
+    const initial = { month: record.month || currentMonthKey(), notes: record.notes || "" };
+    FIELDS.forEach(([key]) => {
+      if (key !== "month") initial[key] = record[key] ?? 0;
+    });
+    return initial;
   });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
