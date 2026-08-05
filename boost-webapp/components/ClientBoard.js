@@ -12,6 +12,8 @@ import ExportPlanningButton from "@/components/ExportPlanningButton";
 const TYPE_COLOR = { Carrusel: "#C42B2B", Reel: "#8B1414", Historia: "#E38A8A", Estatico: "#D96666" };
 const TYPE_SHORT = { Carrusel: "Carrusel", Reel: "Reel", Historia: "Historia", Estatico: "Estático" };
 const PLATFORM_COLOR = { ig: "var(--ig, #D6266E)", fb: "var(--fb, #1877F2)", tk: "var(--tk, #111111)" };
+const STATUS_COLOR = { Idea: "#E8B94A", "Diseñado": "#5B8DEF", Publicado: "#4FAE8A" };
+const STATUS_ICON = { Idea: "○", "Diseñado": "◐", Publicado: "✓" };
 const PLATFORM_LABEL = { ig: "IG", fb: "FB", tk: "TT" };
 
 function shade(hex, percent) {
@@ -141,20 +143,27 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
                 <button
                   key={i}
                   disabled={!d}
+                  className="cal-cell"
                   onClick={() => setSelectedDay(isSelected ? null : d)}
                   style={{
-                    minHeight: 130, border: "none", borderRadius: 10, cursor: d ? "pointer" : "default",
+                    border: "none", borderRadius: 10, cursor: d ? "pointer" : "default",
                     background: isSelected ? accent : "var(--bg3)",
                     outline: isToday && !isSelected ? `2px solid ${accent}` : "none",
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: 4, padding: "6px 4px",
                   }}
                 >
-                  {d && <span style={{ fontSize: 14.5, fontWeight: 600, color: isSelected ? "#fff" : "#5A3232" }}>{d}</span>}
                   {firstPost && (
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: "4px 5px", borderRadius: 5, width: "100%",
-                      display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden",
-                      textAlign: "center", lineHeight: 1.3, wordBreak: "break-word",
+                    <span className="cal-status-dot" style={{
+                      position: "absolute", top: 6, right: 6, width: 10, height: 10, borderRadius: "50%",
+                      background: STATUS_COLOR[firstPost.status] || "#999", border: "1px solid #fff",
+                    }} title={firstPost.status} />
+                  )}
+                  {d && <span className="cal-day-num" style={{ fontWeight: 600, color: isSelected ? "#fff" : "#5A3232" }}>{d}</span>}
+                  {firstPost && (
+                    <span className="cal-title" style={{
+                      fontWeight: 700, padding: "4px 5px", borderRadius: 5, width: "100%",
+                      display: "-webkit-box", WebkitBoxOrient: "vertical", overflow: "hidden",
+                      textAlign: "center", wordBreak: "break-word",
                       color: isSelected ? (TYPE_COLOR[firstPost.type] || accent) : "#fff",
                       background: isSelected ? "#fff" : (TYPE_COLOR[firstPost.type] || "#B07A7A"),
                     }}>{firstPost.title}</span>
@@ -196,7 +205,10 @@ export default function ClientBoard({ client, initialPosts, initialEjes }) {
                   ))}
                 </div>
               </div>
-              <span style={{ fontSize: 13, color: "var(--text-dim)", flexShrink: 0, marginLeft: 8 }}>{p.status}</span>
+              <span style={{
+                fontSize: 12, fontWeight: 700, flexShrink: 0, marginLeft: 8, padding: "4px 10px", borderRadius: 20,
+                color: "#fff", background: STATUS_COLOR[p.status] || "#999",
+              }}>{STATUS_ICON[p.status] || ""} {p.status}</span>
             </div>
           ))}
         </div>
