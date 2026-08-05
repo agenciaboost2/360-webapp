@@ -6,6 +6,7 @@ import AppNav from "@/components/AppNav";
 import NotesCard from "@/components/NotesCard";
 import AlertsCard from "@/components/AlertsCard";
 import TeamRemindersCard from "@/components/TeamRemindersCard";
+import ExtraRequestsCard from "@/components/ExtraRequestsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -59,15 +60,6 @@ export default async function DashboardPage() {
     profile = { id: user.id, full_name: defaultName, avatar_url: "", notes: "" };
   }
 
-  // Limpieza automática: borra publicaciones ya "Publicado" con más de 60 días
-  const sixtyDaysAgo = new Date();
-  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-  await supabase
-    .from("posts")
-    .delete()
-    .eq("status", "Publicado")
-    .lt("post_date", sixtyDaysAgo.toISOString().slice(0, 10));
-
   const { data: clients } = await supabase
     .from("clients")
     .select("*")
@@ -83,7 +75,18 @@ export default async function DashboardPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
+  const { data: extraRequests } = await supabase
+    .from("extra_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
+
   const alerts = computeAlerts(posts || []);
+
+  const pendingByClient = {};
+  (posts || []).forEach((p) => {
+    if (!p.clients || p.status !== "Idea") return;
+    pendingByClient[p.clients.id] = (pendingByClient[p.clients.id] || 0) + 1;
+  });
 
   return (
     <>
@@ -119,6 +122,11 @@ export default async function DashboardPage() {
                     <div style={{ fontWeight: 700, fontSize: 17 }}>{c.name}</div>
                     <div style={{ fontSize: 14, color: "var(--text-dim)" }}>{c.owner} · {c.plan}</div>
                   </div>
+                  {pendingByClient[c.id] > 0 && (
+                    <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: "#8B5C1E", background: "#F0C89A55", flexShrink: 0 }}>
+                      {pendingByClient[c.id]} por diseñar
+                    </span>
+                  )}
                   <span style={{
                     fontSize: 12.5, fontWeight: 600, padding: "4px 9px", borderRadius: 20, textTransform: "uppercase",
                     color: c.status === "Activo" ? "var(--red-dark)" : "#A65C1E",
@@ -138,6 +146,7 @@ export default async function DashboardPage() {
             <AlertsCard alerts={alerts} />
             <NotesCard userId={user.id} initialNotes={profile?.notes} />
             <TeamRemindersCard reminders={reminders || []} userId={user.id} userName={profile?.full_name} lastSeen={profile?.reminders_last_seen} />
+            <ExtraRequestsCard requests={extraRequests || []} userId={user.id} userName={profile?.full_name} />
           </div>
         </div>
       </div>
