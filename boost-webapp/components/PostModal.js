@@ -116,6 +116,17 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     });
   }
 
+  async function handleDuplicate() {
+    setSaving(true);
+    const supabase = createClient();
+    const { title, ...rest } = form;
+    const { error } = await supabase.from("posts").insert({ ...rest, title: `${title} (copia)`, client_id: post.client_id });
+    setSaving(false);
+    if (error) { alert("No se pudo duplicar: " + error.message); return; }
+    alert("Se creó una copia. Cerrá esta pieza y buscala en la lista para editarla.");
+    onSaved();
+  }
+
   return (
     <div style={{ position: "fixed", inset: 0, background: "#00000040", display: "flex", alignItems: "stretch", justifyContent: "flex-end", zIndex: 60 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 680, height: "100%", overflowY: "auto", background: "var(--bg2)", borderLeft: "1px solid var(--border)", boxShadow: "-8px 0 24px #00000022", padding: 32 }}>
@@ -199,6 +210,15 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
             <label>Compartir esta publicación</label>
             <button type="button" className="btn ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleCopyLink}>
               {copied ? "✓ Enlace copiado" : "🔗 Copiar enlace para compartir"}
+            </button>
+          </div>
+        )}
+
+        {post.id && (
+          <div className="field">
+            <label>¿Necesitás una parecida?</label>
+            <button type="button" className="btn ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleDuplicate} disabled={saving}>
+              📋 Duplicar esta pieza
             </button>
           </div>
         )}
