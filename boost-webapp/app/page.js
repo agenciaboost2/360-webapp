@@ -60,6 +60,15 @@ export default async function DashboardPage() {
     profile = { id: user.id, full_name: defaultName, avatar_url: "", notes: "" };
   }
 
+  // Limpieza automática: borra publicaciones ya "Publicado" con más de 60 días
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+  await supabase
+    .from("posts")
+    .delete()
+    .eq("status", "Publicado")
+    .lt("post_date", sixtyDaysAgo.toISOString().slice(0, 10));
+
   const { data: clients } = await supabase
     .from("clients")
     .select("*")
