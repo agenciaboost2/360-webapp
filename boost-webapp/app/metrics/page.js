@@ -43,7 +43,10 @@ export default async function MetricsSummaryPage() {
     <>
       <AppNav current="metricas" profile={profile} userId={user?.id} />
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "30px 40px" }}>
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 23, margin: "0 0 4px" }}>Métricas — Resumen</h1>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 4 }}>
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 23, margin: 0 }}>Métricas — Resumen</h1>
+          <Link href="/metrics/content" className="btn ghost">📊 Rendimiento por pieza</Link>
+        </div>
         <div style={{ fontSize: 14.5, color: "var(--text-dim)", marginBottom: 20 }}>{clients?.length || 0} cuentas · último mes cargado por cuenta</div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12, marginBottom: 20 }}>
