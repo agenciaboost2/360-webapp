@@ -12,7 +12,6 @@ export default function EditClientModal({ client, onClose }) {
   const [status, setStatus] = useState(client.status || "Activo");
   const [color, setColor] = useState(client.color || "#C42B2B");
   const [logoUrl, setLogoUrl] = useState(client.logo_url || "");
-  const [isCreative, setIsCreative] = useState(client.is_creative || false);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
@@ -40,7 +39,7 @@ export default function EditClientModal({ client, onClose }) {
     if (!name.trim()) return;
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.from("clients").update({ emoji, name, owner, plan, status, color, logo_url: logoUrl, is_creative: isCreative }).eq("id", client.id);
+    const { error } = await supabase.from("clients").update({ emoji, name, owner, plan, status, color, logo_url: logoUrl }).eq("id", client.id);
     setSaving(false);
     if (error) { alert("No se pudo guardar: " + error.message); return; }
     onClose();
@@ -81,18 +80,6 @@ export default function EditClientModal({ client, onClose }) {
           </select>
         </div>
         <div className="field"><label>Color de la cuenta</label><input type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ height: 42, padding: 4 }} /></div>
-        <div className="field">
-          <label
-            style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", textTransform: "none", fontSize: 14, color: "var(--text)", fontWeight: 400 }}
-            onClick={() => setIsCreative((v) => !v)}
-          >
-            <span style={{
-              width: 20, height: 20, borderRadius: 5, border: `2px solid ${isCreative ? "var(--red)" : "var(--border)"}`,
-              background: isCreative ? "var(--red)" : "transparent", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13,
-            }}>{isCreative ? "✓" : ""}</span>
-            Es un espacio de Contenido Creativo (sin calendario)
-          </label>
-        </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button type="button" className="btn ghost" style={{ color: "var(--red-dark)", borderColor: "var(--red-dark)" }} onClick={handleDelete} disabled={saving}>Eliminar</button>
           <button type="button" className="btn ghost" style={{ flex: 1 }} onClick={onClose}>Cancelar</button>
