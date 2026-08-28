@@ -108,55 +108,55 @@ export default async function DashboardPage() {
           <LogoutButton />
         </div>
 
-        <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 320 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
-              <div>
-                <h2 style={{ fontFamily: "var(--font-display)", fontSize: 21, margin: 0 }}>Cuentas</h2>
-                <div style={{ fontSize: 14.5, color: "var(--text-dim)" }}>{clients?.length || 0} cuentas</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 28 }}>
+          <AlertsCard alerts={alerts} />
+          <NotesCard userId={user.id} initialNotes={profile?.notes} />
+          <TeamRemindersCard reminders={reminders || []} userId={user.id} userName={profile?.full_name} lastSeen={profile?.reminders_last_seen} />
+          <ExtraRequestsCard requests={extraRequests || []} userId={user.id} userName={profile?.full_name} />
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
+          <div>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 21, margin: 0 }}>Cuentas</h2>
+            <div style={{ fontSize: 14.5, color: "var(--text-dim)" }}>{clients?.length || 0} cuentas</div>
+          </div>
+          <NewClientForm />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 10 }}>
+          {(clients || []).map((c) => (
+            <Link key={c.id} href={`/clients/${c.id}`} className="card" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none", color: "var(--text)", padding: "14px 18px", margin: 0, borderLeft: `5px solid ${c.color || "var(--red)"}` }}>
+              <div style={{
+                width: 46, height: 46, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 24, background: `${c.color || "#C42B2B"}1A`, overflow: "hidden",
+              }}>
+                {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.emoji}
               </div>
-              <NewClientForm />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {(clients || []).map((c) => (
-                <Link key={c.id} href={`/clients/${c.id}`} className="card" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none", color: "var(--text)", padding: "14px 18px", borderLeft: `5px solid ${c.color || "var(--red)"}` }}>
-                  <div style={{
-                    width: 46, height: 46, borderRadius: 12, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 24, background: `${c.color || "#C42B2B"}1A`, overflow: "hidden",
-                  }}>
-                    {c.logo_url ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.emoji}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 17 }}>{c.name}</div>
-                    <div style={{ fontSize: 14, color: "var(--text-dim)" }}>{c.owner} · {c.plan}</div>
-                  </div>
-                  {pendingByClient[c.id] > 0 && (
-                    <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: "#8B5C1E", background: "#F0C89A55", flexShrink: 0 }}>
-                      {pendingByClient[c.id]} por diseñar
-                    </span>
-                  )}
-                  <span style={{
-                    fontSize: 12.5, fontWeight: 600, padding: "4px 9px", borderRadius: 20, textTransform: "uppercase",
-                    color: c.status === "Activo" ? "var(--red-dark)" : "#A65C1E",
-                    background: c.status === "Activo" ? "#8B14141F" : "#F0C89A55",
-                  }}>{c.status}</span>
-                </Link>
-              ))}
-              {(!clients || clients.length === 0) && (
-                <div className="card" style={{ textAlign: "center", color: "var(--text-dim)" }}>
-                  Todavía no hay cuentas cargadas. Agregá la primera arriba.
-                </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 17 }}>{c.name}</div>
+                <div style={{ fontSize: 14, color: "var(--text-dim)" }}>{c.is_creative ? "Contenido creativo" : `${c.owner || ""} · ${c.plan || ""}`}</div>
+              </div>
+              {pendingByClient[c.id] > 0 && (
+                <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: "#8B5C1E", background: "#F0C89A55", flexShrink: 0 }}>
+                  {pendingByClient[c.id]} por diseñar
+                </span>
               )}
+              {c.is_creative ? (
+                <span style={{ fontSize: 12.5, fontWeight: 600, padding: "4px 9px", borderRadius: 20, textTransform: "uppercase", color: "#5B8DEF", background: "#5B8DEF22", flexShrink: 0 }}>Creativo</span>
+              ) : (
+                <span style={{
+                  fontSize: 12.5, fontWeight: 600, padding: "4px 9px", borderRadius: 20, textTransform: "uppercase", flexShrink: 0,
+                  color: c.status === "Activo" ? "var(--red-dark)" : "#A65C1E",
+                  background: c.status === "Activo" ? "#8B14141F" : "#F0C89A55",
+                }}>{c.status}</span>
+              )}
+            </Link>
+          ))}
+          {(!clients || clients.length === 0) && (
+            <div className="card" style={{ textAlign: "center", color: "var(--text-dim)" }}>
+              Todavía no hay cuentas cargadas. Agregá la primera arriba.
             </div>
-          </div>
-
-          <div style={{ width: 360, maxWidth: "100%", flexShrink: 0 }}>
-            <AlertsCard alerts={alerts} />
-            <NotesCard userId={user.id} initialNotes={profile?.notes} />
-            <TeamRemindersCard reminders={reminders || []} userId={user.id} userName={profile?.full_name} lastSeen={profile?.reminders_last_seen} />
-            <ExtraRequestsCard requests={extraRequests || []} userId={user.id} userName={profile?.full_name} />
-          </div>
+          )}
         </div>
       </div>
     </>
