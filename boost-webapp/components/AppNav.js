@@ -16,6 +16,10 @@ export default function AppNav({ current, profile, userId }) {
         padding: "10px 20px", borderRadius: 10, fontSize: 16, fontWeight: 700, textDecoration: "none",
         background: current === "metricas" ? "var(--bg3)" : "transparent", color: "var(--text)",
       }}>Métricas</Link>
+      <Link href="/creative" style={{
+        padding: "10px 20px", borderRadius: 10, fontSize: 16, fontWeight: 700, textDecoration: "none",
+        background: current === "creative" ? "var(--bg3)" : "transparent", color: "var(--text)",
+      }}>Contenido creativo</Link>
 
       {userId ? (
         <button onClick={() => setEditingProfile(true)} style={{
