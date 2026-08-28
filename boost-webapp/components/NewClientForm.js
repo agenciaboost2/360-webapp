@@ -10,7 +10,6 @@ export default function NewClientForm() {
   const [owner, setOwner] = useState("");
   const [plan, setPlan] = useState("");
   const [color, setColor] = useState("#C42B2B");
-  const [isCreative, setIsCreative] = useState(false);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
@@ -19,14 +18,14 @@ export default function NewClientForm() {
     if (!name.trim()) return;
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.from("clients").insert({ emoji, name, owner, plan, color, is_creative: isCreative });
+    const { error } = await supabase.from("clients").insert({ emoji, name, owner, plan, color });
     setSaving(false);
     if (error) {
       alert("No se pudo guardar: " + error.message);
       return;
     }
     setOpen(false);
-    setName(""); setOwner(""); setPlan(""); setEmoji("⭐"); setColor("#C42B2B"); setIsCreative(false);
+    setName(""); setOwner(""); setPlan(""); setEmoji("⭐"); setColor("#C42B2B");
     router.refresh();
   }
 
@@ -43,18 +42,6 @@ export default function NewClientForm() {
         <div className="field"><label>Dueño / contacto</label><input value={owner} onChange={(e) => setOwner(e.target.value)} /></div>
         <div className="field"><label>Plan</label><input value={plan} onChange={(e) => setPlan(e.target.value)} placeholder="Ej: 10 piezas/mes" /></div>
         <div className="field"><label>Color de la cuenta</label><input type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ height: 42, padding: 4 }} /></div>
-        <div className="field">
-          <label
-            style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", textTransform: "none", fontSize: 14, color: "var(--text)", fontWeight: 400 }}
-            onClick={() => setIsCreative((v) => !v)}
-          >
-            <span style={{
-              width: 20, height: 20, borderRadius: 5, border: `2px solid ${isCreative ? "var(--red)" : "var(--border)"}`,
-              background: isCreative ? "var(--red)" : "transparent", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13,
-            }}>{isCreative ? "✓" : ""}</span>
-            Es un espacio de Contenido Creativo (sin calendario)
-          </label>
-        </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button type="button" className="btn ghost" style={{ flex: 1 }} onClick={() => setOpen(false)}>Cancelar</button>
           <button type="submit" className="btn primary" style={{ flex: 1 }} disabled={saving}>{saving ? "Guardando..." : "Guardar"}</button>
