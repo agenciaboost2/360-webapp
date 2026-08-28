@@ -7,6 +7,7 @@ import NotesCard from "@/components/NotesCard";
 import AlertsCard from "@/components/AlertsCard";
 import TeamRemindersCard from "@/components/TeamRemindersCard";
 import ExtraRequestsCard from "@/components/ExtraRequestsCard";
+import CreativeSection from "@/components/CreativeSection";
 
 export const dynamic = "force-dynamic";
 
@@ -89,6 +90,17 @@ export default async function DashboardPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
+  const { data: todos } = await supabase
+    .from("personal_todos")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const { data: creativeItems } = await supabase
+    .from("creative_content")
+    .select("*")
+    .order("estimated_date", { ascending: true, nullsFirst: false });
+
   const alerts = computeAlerts(posts || []);
 
   const pendingByClient = {};
@@ -108,22 +120,15 @@ export default async function DashboardPage() {
           <LogoutButton />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 28 }}>
-          <AlertsCard alerts={alerts} />
-          <NotesCard userId={user.id} initialNotes={profile?.notes} />
-          <TeamRemindersCard reminders={reminders || []} userId={user.id} userName={profile?.full_name} lastSeen={profile?.reminders_last_seen} />
-          <ExtraRequestsCard requests={extraRequests || []} userId={user.id} userName={profile?.full_name} />
-        </div>
-
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
           <div>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 21, margin: 0 }}>Cuentas</h2>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 21, margin: 0 }}>Contenido comercial</h2>
             <div style={{ fontSize: 14.5, color: "var(--text-dim)" }}>{clients?.length || 0} cuentas</div>
           </div>
           <NewClientForm />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {(clients || []).map((c) => (
             <Link key={c.id} href={`/clients/${c.id}`} className="card" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none", color: "var(--text)", padding: "14px 18px", margin: 0, borderLeft: `5px solid ${c.color || "var(--red)"}` }}>
               <div style={{
@@ -134,22 +139,18 @@ export default async function DashboardPage() {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 17 }}>{c.name}</div>
-                <div style={{ fontSize: 14, color: "var(--text-dim)" }}>{c.is_creative ? "Contenido creativo" : `${c.owner || ""} · ${c.plan || ""}`}</div>
+                <div style={{ fontSize: 14, color: "var(--text-dim)" }}>{c.owner} · {c.plan}</div>
               </div>
               {pendingByClient[c.id] > 0 && (
                 <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: "#8B5C1E", background: "#F0C89A55", flexShrink: 0 }}>
                   {pendingByClient[c.id]} por diseñar
                 </span>
               )}
-              {c.is_creative ? (
-                <span style={{ fontSize: 12.5, fontWeight: 600, padding: "4px 9px", borderRadius: 20, textTransform: "uppercase", color: "#5B8DEF", background: "#5B8DEF22", flexShrink: 0 }}>Creativo</span>
-              ) : (
-                <span style={{
-                  fontSize: 12.5, fontWeight: 600, padding: "4px 9px", borderRadius: 20, textTransform: "uppercase", flexShrink: 0,
-                  color: c.status === "Activo" ? "var(--red-dark)" : "#A65C1E",
-                  background: c.status === "Activo" ? "#8B14141F" : "#F0C89A55",
-                }}>{c.status}</span>
-              )}
+              <span style={{
+                fontSize: 12.5, fontWeight: 600, padding: "4px 9px", borderRadius: 20, textTransform: "uppercase",
+                color: c.status === "Activo" ? "var(--red-dark)" : "#A65C1E",
+                background: c.status === "Activo" ? "#8B14141F" : "#F0C89A55",
+              }}>{c.status}</span>
             </Link>
           ))}
           {(!clients || clients.length === 0) && (
@@ -157,6 +158,24 @@ export default async function DashboardPage() {
               Todavía no hay cuentas cargadas. Agregá la primera arriba.
             </div>
           )}
+        </div>
+
+        <CreativeSection items={creativeItems || []} userId={user.id} userName={profile?.full_name} />
+
+        <div style={{ margin: "32px 0 16px" }}>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 21, margin: 0 }}>Recordatorios y notas</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+          <TeamRemindersCard reminders={reminders || []} userId={user.id} userName={profile?.full_name} lastSeen={profile?.reminders_last_seen} />
+          <NotesCard userId={user.id} todos={todos || []} />
+        </div>
+
+        <div style={{ margin: "32px 0 16px" }}>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 21, margin: 0 }}>Alertas y pedidos</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+          <AlertsCard alerts={alerts} />
+          <ExtraRequestsCard requests={extraRequests || []} userId={user.id} userName={profile?.full_name} />
         </div>
       </div>
     </>
