@@ -30,7 +30,7 @@ export default function CreativeModal({ item, userId, userName, onClose, onSaved
     if (item.id) {
       ({ error } = await supabase.from("creative_content").update({ ...form, updated_at: new Date().toISOString() }).eq("id", item.id));
     } else {
-      ({ error } = await supabase.from("creative_content").insert({ ...form, created_by: userId, created_by_name: userName || "" }));
+      ({ error } = await supabase.from("creative_content").insert({ ...form, client_id: item.client_id || null, created_by: userId, created_by_name: userName || "" }));
     }
     setSaving(false);
     if (error) { alert("No se pudo guardar: " + error.message); return; }
@@ -38,44 +38,47 @@ export default function CreativeModal({ item, userId, userName, onClose, onSaved
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#00000040", display: "flex", alignItems: "stretch", justifyContent: "flex-end", zIndex: 60 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 640, height: "100%", overflowY: "auto", background: "var(--bg2)", borderLeft: "1px solid var(--border)", boxShadow: "-8px 0 24px #00000022", padding: 32 }}>
+    <div style={{ position: "fixed", inset: 0, background: "#00000055", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="card" style={{ width: "100%", maxWidth: 1000, maxHeight: "92vh", overflowY: "auto" }}>
         <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 22, marginTop: 0, marginBottom: 18 }}>
           {item.id ? "Editar idea" : "Nueva idea"}
         </h2>
 
-        <div className="field"><label>Nombre de contenido</label><input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Nombre interno para identificarla" /></div>
-        <div className="field"><label>Título</label><input value={form.title} onChange={(e) => set("title", e.target.value)} /></div>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <div className="field" style={{ flex: 1, minWidth: 220 }}><label>Nombre de contenido</label><input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Nombre interno para identificarla" /></div>
+          <div className="field" style={{ flex: 1, minWidth: 220 }}><label>Título</label><input value={form.title} onChange={(e) => set("title", e.target.value)} /></div>
+        </div>
 
-        <div className="field">
-          <label>Tipo</label>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {TYPES.map((t) => (
-              <button key={t} type="button" onClick={() => set("type", t)} style={{
-                padding: "7px 12px", borderRadius: 8, fontSize: 14.5, cursor: "pointer",
-                border: `1px solid ${form.type === t ? "var(--red)" : "var(--border)"}`,
-                background: form.type === t ? "#C42B2B22" : "transparent",
-                color: form.type === t ? "var(--red-dark)" : "var(--text-dim)",
-              }}>{t}</button>
-            ))}
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <div className="field" style={{ flex: 1, minWidth: 260 }}>
+            <label>Tipo</label>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {TYPES.map((t) => (
+                <button key={t} type="button" onClick={() => set("type", t)} style={{
+                  padding: "9px 16px", borderRadius: 8, fontSize: 15, cursor: "pointer",
+                  border: `1px solid ${form.type === t ? "var(--red)" : "var(--border)"}`,
+                  background: form.type === t ? "#C42B2B22" : "transparent",
+                  color: form.type === t ? "var(--red-dark)" : "var(--text-dim)",
+                }}>{t}</button>
+              ))}
+            </div>
+          </div>
+          <div className="field" style={{ flex: 1, minWidth: 260 }}>
+            <label>Territorio</label>
+            <select value={form.territory} onChange={(e) => set("territory", e.target.value)}>
+              {TERRITORIES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
           </div>
         </div>
 
         <div className="field">
-          <label>Territorio</label>
-          <select value={form.territory} onChange={(e) => set("territory", e.target.value)}>
-            {TERRITORIES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
-          </select>
-        </div>
-
-        <div className="field">
           <label>Guion o indicaciones</label>
-          <textarea rows={9} value={form.script} onChange={(e) => set("script", e.target.value)} placeholder="Indicaciones de carrusel, historia o reel — escribilo como prefieras organizarlo." />
+          <textarea rows={18} value={form.script} onChange={(e) => set("script", e.target.value)} placeholder="Indicaciones de carrusel, historia o reel — escribilo como prefieras organizarlo." style={{ fontSize: 15, lineHeight: 1.5 }} />
         </div>
 
-        <div style={{ display: "flex", gap: 12 }}>
-          <div className="field" style={{ flex: 1 }}><label>Fecha estimativa de publicación</label><input type="date" value={form.estimated_date || ""} onChange={(e) => set("estimated_date", e.target.value)} /></div>
-          <div className="field" style={{ flex: 1 }}>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <div className="field" style={{ flex: 1, minWidth: 220 }}><label>Fecha estimativa de publicación</label><input type="date" value={form.estimated_date || ""} onChange={(e) => set("estimated_date", e.target.value)} /></div>
+          <div className="field" style={{ flex: 1, minWidth: 220 }}>
             <label>Publicado</label>
             <button type="button" onClick={() => set("published", !form.published)} style={{
               width: "100%", padding: "10px", borderRadius: 8, cursor: "pointer",
