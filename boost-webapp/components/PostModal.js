@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const TYPES = ["Carrusel", "Reel", "Historia", "Estatico"];
-const STATUSES = ["Idea", "DiseÃ±ado", "Publicado"];
+const STATUSES = ["Idea", "Diseñado", "Publicado"];
 const PLATFORMS = [
   { id: "ig", label: "Instagram", short: "IG", color: "#D6266E" },
   { id: "fb", label: "Facebook", short: "FB", color: "#1877F2" },
@@ -11,20 +11,20 @@ const PLATFORMS = [
 ];
 const CONTENT_LABEL = {
   Carrusel: "Contenido del carrusel",
-  Reel: "Guion e indicaciones de ediciÃ³n",
+  Reel: "Guion e indicaciones de edición",
   Historia: "Indicaciones de contenido",
   Estatico: "Indicaciones de contenido",
 };
 const CONTENT_PLACEHOLDER = {
-  Carrusel: "EscribÃ­ acÃ¡ todo el contenido del carrusel como prefieras organizarlo: tÃ­tulo y subtÃ­tulo de cada slide, palabras a remarcar, orden, lo que necesites.",
-  Reel: "EscribÃ­ todo el guion junto: escenas, video, audio, texto en pantalla, ediciÃ³n...",
-  Historia: "Texto, indicaciones de diseÃ±o, referencias, todo lo que necesite la diseÃ±adora para armar esta pieza.",
-  Estatico: "Texto, indicaciones de diseÃ±o, referencias, todo lo que necesite la diseÃ±adora para armar esta pieza.",
+  Carrusel: "Escribí acá todo el contenido del carrusel como prefieras organizarlo: título y subtítulo de cada slide, palabras a remarcar, orden, lo que necesites.",
+  Reel: "Escribí todo el guion junto: escenas, video, audio, texto en pantalla, edición...",
+  Historia: "Texto, indicaciones de diseño, referencias, todo lo que necesite la diseñadora para armar esta pieza.",
+  Estatico: "Texto, indicaciones de diseño, referencias, todo lo que necesite la diseñadora para armar esta pieza.",
 };
 
 export default function PostModal({ post, onClose, onDelete, onSaved }) {
   const [form, setForm] = useState({
-    title: post.title || "Nueva publicaciÃ³n",
+    title: post.title || "Nueva publicación",
     objective: post.objective || "",
     type: post.type || "Carrusel",
     post_date: post.post_date || new Date().toISOString().slice(0, 10),
@@ -34,9 +34,6 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     caption: post.caption || "",
     notes: post.notes || "",
     script: post.script || "",
-    reach: post.reach ?? 0, views: post.views ?? 0, likes: post.likes ?? 0,
-    comments: post.comments ?? 0, reposts: post.reposts ?? 0, saved: post.saved ?? 0,
-    shared_between_users: post.shared_between_users ?? 0,
   });
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -106,7 +103,7 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
   }
 
   function handleUndo() {
-    if (!confirm("Â¿Volver a como estaba esta pieza cuando la abriste, descartando los cambios hechos en esta sesiÃ³n?")) return;
+    if (!confirm("¿Volver a como estaba esta pieza cuando la abriste, descartando los cambios hechos en esta sesión?")) return;
     setForm(openingSnapshot.current);
     setTimeout(() => doSave(false), 50);
   }
@@ -126,7 +123,7 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     const { error } = await supabase.from("posts").insert({ ...rest, title: `${title} (copia)`, client_id: post.client_id });
     setSaving(false);
     if (error) { alert("No se pudo duplicar: " + error.message); return; }
-    alert("Se creÃ³ una copia. CerrÃ¡ esta pieza y buscala en la lista para editarla.");
+    alert("Se creó una copia. Cerrá esta pieza y buscala en la lista para editarla.");
     onSaved();
   }
 
@@ -137,7 +134,7 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
           <input value={form.title} onChange={(e) => set("title", e.target.value)} style={{ flex: 1, background: "transparent", border: "none", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 22, padding: 0, outline: "none", color: "var(--text)" }} />
           {saveStatus && (
             <span style={{ fontSize: 12, color: saveStatus === "guardando" ? "var(--text-dim)" : "var(--accent-mint)", flexShrink: 0, whiteSpace: "nowrap" }}>
-              {saveStatus === "guardando" ? "Guardando..." : "âœ“ Guardado"}
+              {saveStatus === "guardando" ? "Guardando..." : "✓ Guardado"}
             </span>
           )}
         </div>
@@ -196,10 +193,10 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
             <div key={idx} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
               <input value={l} onChange={(e) => updateLink(idx, e.target.value)} placeholder="https://drive.google.com/..." style={{ flex: 1 }} />
               {l.trim() && (
-                <a href={l.trim()} target="_blank" rel="noopener noreferrer" title="Abrir" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, flexShrink: 0, border: "1px solid var(--border)", borderRadius: 8, color: "var(--red-dark)", textDecoration: "none" }}>â†—</a>
+                <a href={l.trim()} target="_blank" rel="noopener noreferrer" title="Abrir" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, flexShrink: 0, border: "1px solid var(--border)", borderRadius: 8, color: "var(--red-dark)", textDecoration: "none" }}>↗</a>
               )}
               {linkRows.length > 1 && (
-                <button type="button" onClick={() => removeLink(idx)} style={{ width: 30, flexShrink: 0, background: "none", border: "none", color: "var(--text-dim)", cursor: "pointer" }}>âœ•</button>
+                <button type="button" onClick={() => removeLink(idx)} style={{ width: 30, flexShrink: 0, background: "none", border: "none", color: "var(--text-dim)", cursor: "pointer" }}>✕</button>
               )}
             </div>
           ))}
@@ -210,48 +207,33 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
 
         {savedId && (
           <div className="field">
-            <label>ðŸ“Š MÃ©tricas de esta pieza (cargar cuando ya estÃ© publicada)</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
-              <div className="field"><label>Alcance</label><input type="number" value={form.reach} onChange={(e) => set("reach", e.target.value)} /></div>
-              <div className="field"><label>Visualizaciones</label><input type="number" value={form.views} onChange={(e) => set("views", e.target.value)} /></div>
-              <div className="field"><label>Me gusta</label><input type="number" value={form.likes} onChange={(e) => set("likes", e.target.value)} /></div>
-              <div className="field"><label>Comentarios</label><input type="number" value={form.comments} onChange={(e) => set("comments", e.target.value)} /></div>
-              <div className="field"><label>Reposts</label><input type="number" value={form.reposts} onChange={(e) => set("reposts", e.target.value)} /></div>
-              <div className="field"><label>Guardado</label><input type="number" value={form.saved} onChange={(e) => set("saved", e.target.value)} /></div>
-              <div className="field"><label>Compartido entre usuarios</label><input type="number" value={form.shared_between_users} onChange={(e) => set("shared_between_users", e.target.value)} /></div>
-            </div>
-          </div>
-        )}
-
-        {savedId && (
-          <div className="field">
-            <label>Compartir esta publicaciÃ³n</label>
+            <label>Compartir esta publicación</label>
             <button type="button" className="btn ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleCopyLink}>
-              {copied ? "âœ“ Enlace copiado" : "ðŸ”— Copiar enlace para compartir"}
+              {copied ? "✓ Enlace copiado" : "🔗 Copiar enlace para compartir"}
             </button>
           </div>
         )}
 
         {post.id && (
           <div className="field">
-            <label>Â¿NecesitÃ¡s una parecida?</label>
+            <label>¿Necesitás una parecida?</label>
             <button type="button" className="btn ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleDuplicate} disabled={saving}>
-              ðŸ“‹ Duplicar esta pieza
+              📋 Duplicar esta pieza
             </button>
           </div>
         )}
 
         {post.id && (
           <div className="field">
-            <label>Â¿No te convenciÃ³ el cambio?</label>
+            <label>¿No te convenció el cambio?</label>
             <button type="button" className="btn ghost" style={{ width: "100%", justifyContent: "center" }} onClick={handleUndo}>
-              â†© Deshacer y volver a como estaba al abrir
+              ↩ Deshacer y volver a como estaba al abrir
             </button>
           </div>
         )}
 
         <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 14 }}>
-          Se guarda solo mientras escribÃ­s, no hace falta que toques "Guardar" para no perder los cambios.
+          Se guarda solo mientras escribís, no hace falta que toques "Guardar" para no perder los cambios.
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
