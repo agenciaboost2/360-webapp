@@ -16,11 +16,13 @@ export default async function ClientMetricsPage({ params }) {
 
   const { data: organic } = await supabase.from("organic_records").select("*").eq("client_id", id).order("month");
   const { data: campaigns } = await supabase.from("ad_campaigns").select("*").eq("client_id", id);
+  const { data: posts } = await supabase.from("posts").select("*").eq("client_id", id).order("post_date", { ascending: false });
+  const { data: history } = await supabase.from("post_performance_history").select("*").eq("client_id", id).order("post_date", { ascending: false });
 
   return (
     <>
       <AppNav current="metricas" profile={profile} userId={user?.id} />
-      <MetricsBoard client={client} initialOrganic={organic || []} initialCampaigns={campaigns || []} />
+      <MetricsBoard client={client} initialOrganic={organic || []} initialCampaigns={campaigns || []} initialPosts={posts || []} initialHistory={history || []} />
     </>
   );
 }
