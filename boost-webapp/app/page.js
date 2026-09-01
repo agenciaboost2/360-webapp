@@ -61,14 +61,32 @@ export default async function DashboardPage() {
     profile = { id: user.id, full_name: defaultName, avatar_url: "", notes: "" };
   }
 
-  // Limpieza automática: borra publicaciones ya "Publicado" con más de 60 días
+  // Limpieza automática: archiva las métricas y borra publicaciones ya "Publicado" con más de 60 días
   const sixtyDaysAgo = new Date();
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-  await supabase
+  const cutoffDate = sixtyDaysAgo.toISOString().slice(0, 10);
+
+  const { data: toArchive } = await supabase
     .from("posts")
-    .delete()
+    .select("*")
     .eq("status", "Publicado")
-    .lt("post_date", sixtyDaysAgo.toISOString().slice(0, 10));
+    .lt("post_date", cutoffDate);
+
+  if (toArchive && toArchive.length > 0) {
+    await supabase.from("post_performance_history").insert(
+      toArchive.map((p) => ({
+        client_id: p.client_id, title: p.title, type: p.type, post_date: p.post_date,
+        reach: p.reach, views: p.views, likes: p.likes, comments: p.comments, reposts: p.reposts,
+        saved: p.saved, shared_between_users: p.shared_between_users, viewers: p.viewers,
+        profile_views: p.profile_views, new_followers: p.new_followers,
+      }))
+    );
+    await supabase
+      .from("posts")
+      .delete()
+      .eq("status", "Publicado")
+      .lt("post_date", cutoffDate);
+  }
 
   const { data: clients } = await supabase
     .from("clients")
