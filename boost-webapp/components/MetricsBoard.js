@@ -42,7 +42,7 @@ function monthSubtotal(rows) {
   return { ...t, ...campaignCalc(t) };
 }
 
-export default function MetricsBoard({ client, initialOrganic, initialCampaigns, initialPosts }) {
+export default function MetricsBoard({ client, initialOrganic, initialCampaigns, initialPosts, initialHistory }) {
   const router = useRouter();
   const [tab, setTab] = useState("organico");
   const [modalOrganic, setModalOrganic] = useState(null);
@@ -61,7 +61,8 @@ export default function MetricsBoard({ client, initialOrganic, initialCampaigns,
   }
 
   const months = [...new Set(initialCampaigns.map((c) => c.month))].sort().reverse();
-  const postMonths = [...new Set((initialPosts || []).map(postMonthKey).filter(Boolean))].sort().reverse();
+  const allPieces = [...(initialPosts || []), ...(initialHistory || []).map((h) => ({ ...h, archived: true }))];
+  const postMonths = [...new Set(allPieces.map(postMonthKey).filter(Boolean))].sort().reverse();
   const [chartReady, setChartReady] = useState(false);
   const chartRefs = useRef({});
   const chartInstances = useRef({});
@@ -71,7 +72,7 @@ export default function MetricsBoard({ client, initialOrganic, initialCampaigns,
     postMonths.forEach((mk) => {
       const canvas = chartRefs.current[mk];
       if (!canvas) return;
-      const rows = (initialPosts || [])
+      const rows = (allPieces)
         .filter((p) => postMonthKey(p) === mk)
         .map((p) => ({ ...p, ...postCalc(p) }))
         .sort((a, b) => b.interactions - a.interactions);
@@ -256,7 +257,7 @@ export default function MetricsBoard({ client, initialOrganic, initialCampaigns,
             <div className="card" style={{ textAlign: "center", color: "var(--text-dim)", padding: 24 }}>Sin publicaciones cargadas todavía.</div>
           ) : (
             postMonths.map((mk) => {
-              const rows = (initialPosts || [])
+              const rows = (allPieces)
                 .filter((p) => postMonthKey(p) === mk)
                 .map((p) => ({ ...p, ...postCalc(p) }))
                 .sort((a, b) => b.interactions - a.interactions);
@@ -302,9 +303,15 @@ export default function MetricsBoard({ client, initialOrganic, initialCampaigns,
                               background: isBest ? "var(--accent-mint-bg)" : isWorst ? "#FDEAEA" : "transparent",
                             }}>
                               <td style={{ padding: "8px", fontWeight: 600 }}>
-                                <Link href={`/clients/${client.id}?post=${p.id}`} style={{ color: isBest ? "#2F7A5C" : isWorst ? "var(--red-dark)" : "var(--text)", textDecoration: "none" }}>
-                                  {p.title}
-                                </Link>
+                                {p.archived ? (
+                                  <span style={{ color: isBest ? "#2F7A5C" : isWorst ? "var(--red-dark)" : "var(--text)" }}>
+                                    {p.title} <span style={{ fontSize: 11, fontWeight: 400, color: "var(--text-dim)" }}>(archivada)</span>
+                                  </span>
+                                ) : (
+                                  <Link href={`/clients/${client.id}?post=${p.id}`} style={{ color: isBest ? "#2F7A5C" : isWorst ? "var(--red-dark)" : "var(--text)", textDecoration: "none" }}>
+                                    {p.title}
+                                  </Link>
+                                )}
                               </td>
                               <td style={{ padding: "8px" }}>{p.type}</td>
                               <td style={{ padding: "8px" }}>{fmt(p.likes)}</td>
