@@ -61,7 +61,7 @@ export default function MetricsBoard({ client, initialOrganic, initialCampaigns,
   }
 
   const months = [...new Set(initialCampaigns.map((c) => c.month))].sort().reverse();
-  const allPieces = [...(initialPosts || []), ...(initialHistory || []).map((h) => ({ ...h, archived: true }))];
+  const allPieces = [...(initialPosts || []), ...(initialHistory || []).map((h) => ({ ...h, archived: true }))].filter((p) => p.type !== "Historia");
   const postMonths = [...new Set(allPieces.map(postMonthKey).filter(Boolean))].sort().reverse();
   const [chartReady, setChartReady] = useState(false);
   const chartRefs = useRef({});
@@ -286,9 +286,6 @@ export default function MetricsBoard({ client, initialOrganic, initialCampaigns,
                           <th style={{ padding: "6px 8px" }}>Guardado</th>
                           <th style={{ padding: "6px 8px" }}>Reposts</th>
                           <th style={{ padding: "6px 8px" }}>Reproducc.</th>
-                          <th style={{ padding: "6px 8px" }}>Espectad.</th>
-                          <th style={{ padding: "6px 8px" }}>V. perfil</th>
-                          <th style={{ padding: "6px 8px" }}>Seguid.</th>
                           <th style={{ padding: "6px 8px" }}>Interacción</th>
                           <th style={{ padding: "6px 8px" }}>Engagement</th>
                         </tr>
@@ -320,9 +317,6 @@ export default function MetricsBoard({ client, initialOrganic, initialCampaigns,
                               <td style={{ padding: "8px" }}>{fmt(p.saved)}</td>
                               <td style={{ padding: "8px" }}>{fmt(p.reposts)}</td>
                               <td style={{ padding: "8px" }}>{fmt(p.views)}</td>
-                              <td style={{ padding: "8px" }}>{fmt(p.viewers)}</td>
-                              <td style={{ padding: "8px" }}>{fmt(p.profile_views)}</td>
-                              <td style={{ padding: "8px" }}>{fmt(p.new_followers)}</td>
                               <td style={{ padding: "8px", fontWeight: 700, color: isBest ? "#2F7A5C" : isWorst ? "var(--red-dark)" : "var(--text)" }}>{fmt(p.interactions)}</td>
                               <td style={{ padding: "8px" }}>{fmt(p.engagementRate, 1)}%</td>
                             </tr>
