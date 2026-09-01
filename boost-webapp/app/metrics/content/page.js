@@ -41,7 +41,7 @@ export default async function ContentPerformancePage() {
     const interactions = n(r.likes) + n(r.comments) + n(r.reposts) + n(r.saved) + n(r.shared);
     const engagement = n(r.reach) > 0 ? (interactions / n(r.reach)) * 100 : 0;
     return { ...r, interactions, engagement };
-  }).sort((a, b) => b.interactions - a.interactions);
+  }).filter((r) => r.type !== "Historia").sort((a, b) => b.interactions - a.interactions);
 
   return (
     <>
