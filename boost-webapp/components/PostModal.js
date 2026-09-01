@@ -34,6 +34,9 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     caption: post.caption || "",
     notes: post.notes || "",
     script: post.script || "",
+    reach: post.reach ?? 0, views: post.views ?? 0, likes: post.likes ?? 0,
+    comments: post.comments ?? 0, reposts: post.reposts ?? 0, saved: post.saved ?? 0,
+    shared_between_users: post.shared_between_users ?? 0,
   });
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -80,10 +83,14 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     const supabase = createClient();
     let error, newId = savedId;
 
+    const NUMERIC_FIELDS = ["reach", "views", "likes", "comments", "reposts", "saved", "shared_between_users"];
+    const payload = { ...form };
+    NUMERIC_FIELDS.forEach((k) => { payload[k] = payload[k] === "" || payload[k] == null ? 0 : Number(payload[k]) || 0; });
+
     if (savedId) {
-      ({ error } = await supabase.from("posts").update({ ...form, updated_at: new Date().toISOString() }).eq("id", savedId));
+      ({ error } = await supabase.from("posts").update({ ...payload, updated_at: new Date().toISOString() }).eq("id", savedId));
     } else {
-      const { data, error: insErr } = await supabase.from("posts").insert({ ...form, client_id: post.client_id }).select().single();
+      const { data, error: insErr } = await supabase.from("posts").insert({ ...payload, client_id: post.client_id }).select().single();
       error = insErr;
       if (data) { newId = data.id; setSavedId(data.id); }
     }
@@ -204,6 +211,21 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
         </div>
         <div className="field"><label>Caption</label><textarea rows={3} value={form.caption} onChange={(e) => set("caption", e.target.value)} /></div>
         <div className="field"><label>Notas</label><textarea rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} /></div>
+
+        {savedId && (
+          <div className="field">
+            <label>📊 Métricas de esta pieza (cargar cuando ya esté publicada)</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
+              <div className="field"><label>Alcance</label><input type="number" value={form.reach} onChange={(e) => set("reach", e.target.value)} /></div>
+              <div className="field"><label>Visualizaciones</label><input type="number" value={form.views} onChange={(e) => set("views", e.target.value)} /></div>
+              <div className="field"><label>Me gusta</label><input type="number" value={form.likes} onChange={(e) => set("likes", e.target.value)} /></div>
+              <div className="field"><label>Comentarios</label><input type="number" value={form.comments} onChange={(e) => set("comments", e.target.value)} /></div>
+              <div className="field"><label>Reposts</label><input type="number" value={form.reposts} onChange={(e) => set("reposts", e.target.value)} /></div>
+              <div className="field"><label>Guardado</label><input type="number" value={form.saved} onChange={(e) => set("saved", e.target.value)} /></div>
+              <div className="field"><label>Compartido entre usuarios</label><input type="number" value={form.shared_between_users} onChange={(e) => set("shared_between_users", e.target.value)} /></div>
+            </div>
+          </div>
+        )}
 
         {savedId && (
           <div className="field">

@@ -26,11 +26,14 @@ export default function CampaignModal({ campaign, onClose, onSaved }) {
   async function handleSave() {
     setSaving(true);
     const supabase = createClient();
+    const NUMERIC_FIELDS = ["spend", "reach", "impressions", "clicks", "results"];
+    const payload = { ...form };
+    NUMERIC_FIELDS.forEach((k) => { payload[k] = payload[k] === "" || payload[k] == null ? 0 : Number(payload[k]) || 0; });
     let error;
     if (campaign.id) {
-      ({ error } = await supabase.from("ad_campaigns").update(form).eq("id", campaign.id));
+      ({ error } = await supabase.from("ad_campaigns").update(payload).eq("id", campaign.id));
     } else {
-      ({ error } = await supabase.from("ad_campaigns").insert({ ...form, client_id: campaign.client_id }));
+      ({ error } = await supabase.from("ad_campaigns").insert({ ...payload, client_id: campaign.client_id }));
     }
     setSaving(false);
     if (error) { alert("No se pudo guardar: " + error.message); return; }

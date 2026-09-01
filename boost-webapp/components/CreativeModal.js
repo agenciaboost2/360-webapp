@@ -30,10 +30,13 @@ export default function CreativeModal({ item, userId, userName, onClose, onSaved
     setSaving(true);
     const supabase = createClient();
     let error;
+    const NUMERIC_FIELDS = ["reach", "views", "likes", "comments", "reposts", "saved", "shared_between_users"];
+    const payload = { ...form };
+    NUMERIC_FIELDS.forEach((k) => { payload[k] = payload[k] === "" || payload[k] == null ? 0 : Number(payload[k]) || 0; });
     if (item.id) {
-      ({ error } = await supabase.from("creative_content").update({ ...form, updated_at: new Date().toISOString() }).eq("id", item.id));
+      ({ error } = await supabase.from("creative_content").update({ ...payload, updated_at: new Date().toISOString() }).eq("id", item.id));
     } else {
-      ({ error } = await supabase.from("creative_content").insert({ ...form, client_id: item.client_id || null, created_by: userId, created_by_name: userName || "" }));
+      ({ error } = await supabase.from("creative_content").insert({ ...payload, client_id: item.client_id || null, created_by: userId, created_by_name: userName || "" }));
     }
     setSaving(false);
     if (error) { alert("No se pudo guardar: " + error.message); return; }

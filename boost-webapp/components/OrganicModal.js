@@ -39,6 +39,9 @@ export default function OrganicModal({ record, onClose, onSaved }) {
     setSaving(true);
     const supabase = createClient();
     const payload = { ...form, client_id: record.client_id };
+    FIELDS.forEach(([key, , type]) => {
+      if (type === "number") payload[key] = payload[key] === "" || payload[key] == null ? 0 : Number(payload[key]) || 0;
+    });
     let error;
     if (record.id) {
       ({ error } = await supabase.from("organic_records").update(payload).eq("id", record.id));
