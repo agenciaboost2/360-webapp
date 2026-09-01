@@ -37,6 +37,7 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     reach: post.reach ?? 0, views: post.views ?? 0, likes: post.likes ?? 0,
     comments: post.comments ?? 0, reposts: post.reposts ?? 0, saved: post.saved ?? 0,
     shared_between_users: post.shared_between_users ?? 0,
+    viewers: post.viewers ?? 0, profile_views: post.profile_views ?? 0, new_followers: post.new_followers ?? 0,
   });
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -83,7 +84,7 @@ export default function PostModal({ post, onClose, onDelete, onSaved }) {
     const supabase = createClient();
     let error, newId = savedId;
 
-    const NUMERIC_FIELDS = ["reach", "views", "likes", "comments", "reposts", "saved", "shared_between_users"];
+    const NUMERIC_FIELDS = ["reach", "views", "likes", "comments", "reposts", "saved", "shared_between_users", "viewers", "profile_views", "new_followers"];
     const payload = { ...form };
     NUMERIC_FIELDS.forEach((k) => { payload[k] = payload[k] === "" || payload[k] == null ? 0 : Number(payload[k]) || 0; });
 
