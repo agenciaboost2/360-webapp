@@ -33,6 +33,7 @@ export default function CreativeModal({ item, userId, userName, onClose, onSaved
     const NUMERIC_FIELDS = ["reach", "views", "likes", "comments", "reposts", "saved", "shared_between_users"];
     const payload = { ...form };
     NUMERIC_FIELDS.forEach((k) => { payload[k] = payload[k] === "" || payload[k] == null ? 0 : Number(payload[k]) || 0; });
+    if (!payload.estimated_date) payload.estimated_date = null;
     if (item.id) {
       ({ error } = await supabase.from("creative_content").update({ ...payload, updated_at: new Date().toISOString() }).eq("id", item.id));
     } else {
