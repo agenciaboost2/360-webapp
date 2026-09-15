@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -7,7 +7,10 @@ export default function NotesCard({ userId, todos }) {
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [localTodos, setLocalTodos] = useState(todos || []);
   const router = useRouter();
+
+  useEffect(() => { setLocalTodos(todos || []); }, [todos]);
 
   async function handleAdd() {
     if (!text.trim()) return;
@@ -20,16 +23,16 @@ export default function NotesCard({ userId, todos }) {
     router.refresh();
   }
 
-  async function toggleDone(item) {
+  function toggleDone(item) {
+    setLocalTodos((list) => list.map((t) => (t.id === item.id ? { ...t, done: !t.done } : t)));
     const supabase = createClient();
-    await supabase.from("personal_todos").update({ done: !item.done }).eq("id", item.id);
-    router.refresh();
+    supabase.from("personal_todos").update({ done: !item.done }).eq("id", item.id).then(() => router.refresh());
   }
 
-  async function handleDelete(id) {
+  function handleDelete(id) {
+    setLocalTodos((list) => list.filter((t) => t.id !== id));
     const supabase = createClient();
-    await supabase.from("personal_todos").delete().eq("id", id);
-    router.refresh();
+    supabase.from("personal_todos").delete().eq("id", id).then(() => router.refresh());
   }
 
   return (
@@ -49,11 +52,11 @@ export default function NotesCard({ userId, todos }) {
         </div>
       )}
 
-      {(!todos || todos.length === 0) ? (
+      {(!localTodos || localTodos.length === 0) ? (
         <div style={{ fontSize: 14, color: "#9A7B2E" }}>Sin pendientes por ahora.</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {todos.map((item) => (
+          {localTodos.map((item) => (
             <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", borderRadius: 8, padding: "8px 10px", border: "1px solid #EAD9A8" }}>
               <button onClick={() => toggleDone(item)} style={{
                 width: 20, height: 20, borderRadius: 5, flexShrink: 0, cursor: "pointer",
