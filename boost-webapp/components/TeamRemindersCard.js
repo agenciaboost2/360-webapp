@@ -7,8 +7,11 @@ export default function TeamRemindersCard({ reminders, userId, userName, lastSee
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [localReminders, setLocalReminders] = useState(reminders || []);
   const router = useRouter();
   const notifiedRef = useRef(false);
+
+  useEffect(() => { setLocalReminders(reminders || []); }, [reminders]);
 
   const newIds = new Set(
     (reminders || [])
@@ -36,16 +39,16 @@ export default function TeamRemindersCard({ reminders, userId, userName, lastSee
     router.refresh();
   }
 
-  async function toggleDone(item) {
+  function toggleDone(item) {
+    setLocalReminders((list) => list.map((r) => (r.id === item.id ? { ...r, done: !r.done } : r)));
     const supabase = createClient();
-    await supabase.from("team_reminders").update({ done: !item.done }).eq("id", item.id);
-    router.refresh();
+    supabase.from("team_reminders").update({ done: !item.done }).eq("id", item.id).then(() => router.refresh());
   }
 
-  async function handleDelete(id) {
+  function handleDelete(id) {
+    setLocalReminders((list) => list.filter((r) => r.id !== id));
     const supabase = createClient();
-    await supabase.from("team_reminders").delete().eq("id", id);
-    router.refresh();
+    supabase.from("team_reminders").delete().eq("id", id).then(() => router.refresh());
   }
 
   return (
@@ -65,11 +68,11 @@ export default function TeamRemindersCard({ reminders, userId, userName, lastSee
         </div>
       )}
 
-      {(!reminders || reminders.length === 0) ? (
+      {(!localReminders || localReminders.length === 0) ? (
         <div style={{ fontSize: 14, color: "#3A5FB0" }}>Sin recordatorios por ahora.</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {reminders.map((r) => (
+          {localReminders.map((r) => (
             <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", borderRadius: 8, padding: "8px 10px", border: `1px solid ${newIds.has(r.id) ? "#5B8DEF" : "#C7D6F5"}` }}>
               <button onClick={() => toggleDone(r)} style={{
                 width: 20, height: 20, borderRadius: 5, flexShrink: 0, cursor: "pointer",
