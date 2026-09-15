@@ -22,7 +22,6 @@ export default function CreativeModal({ item, userId, userName, onClose, onSaved
     reach: item.reach ?? 0, views: item.views ?? 0, likes: item.likes ?? 0,
     comments: item.comments ?? 0, reposts: item.reposts ?? 0, saved: item.saved ?? 0,
     shared_between_users: item.shared_between_users ?? 0,
-    viewers: item.viewers ?? 0, profile_views: item.profile_views ?? 0, new_followers: item.new_followers ?? 0,
   });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -31,13 +30,13 @@ export default function CreativeModal({ item, userId, userName, onClose, onSaved
     setSaving(true);
     const supabase = createClient();
     let error;
-    const NUMERIC_FIELDS = ["reach", "views", "likes", "comments", "reposts", "saved", "shared_between_users", "viewers", "profile_views", "new_followers"];
+    const NUMERIC_FIELDS = ["reach", "views", "likes", "comments", "reposts", "saved", "shared_between_users"];
     const payload = { ...form };
     NUMERIC_FIELDS.forEach((k) => { payload[k] = payload[k] === "" || payload[k] == null ? 0 : Number(payload[k]) || 0; });
     if (item.id) {
       ({ error } = await supabase.from("creative_content").update({ ...payload, updated_at: new Date().toISOString() }).eq("id", item.id));
     } else {
-      ({ error } = await supabase.from("creative_content").insert({ ...payload, client_id: item.client_id || null, created_by: userId, created_by_name: userName || "" }));
+      ({ error } = await supabase.from("creative_content").insert({ ...payload, created_by: userId, created_by_name: userName || "" }));
     }
     setSaving(false);
     if (error) { alert("No se pudo guardar: " + error.message); return; }
